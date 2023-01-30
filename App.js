@@ -12,7 +12,7 @@ const copyArray = (arr) => {
 };
 
 export default function App() {
-  const word = "hello";
+  const word = "fiona";
   const letters = word.split("");
 
   const [rows, setRows] = useState(
@@ -53,6 +53,20 @@ export default function App() {
     return row === curRow && col === curCol;
   };
 
+  const getCellBGColor = (letter, row, col) => {
+    if (row >= curRow) {
+      return colors.black;
+    }
+
+    if (letter === letters[col]) {
+      return colors.primary;
+    }
+    if (letters.includes(letter)) {
+      return colors.secondary;
+    }
+    return colors.darkgrey;
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
@@ -61,7 +75,7 @@ export default function App() {
       <ScrollView style={styles.map}>
         {rows.map((row, i) => (
           <View key={uuidv4()} style={styles.row}>
-            {row.map((cell, j) => (
+            {row.map((letter, j) => (
               <View
                 key={uuidv4()}
                 style={[
@@ -70,10 +84,11 @@ export default function App() {
                     borderColor: isCellActive(i, j) //shows the active cell outlined in gray box
                       ? colors.lightgrey
                       : colors.darkgrey,
+                    backgroundColor: getCellBGColor(letter, i, j),
                   },
                 ]}
               >
-                <Text style={styles.cellText}>{cell.toUpperCase()}</Text>
+                <Text style={styles.cellText}>{letter.toUpperCase()}</Text>
               </View>
             ))}
           </View>
