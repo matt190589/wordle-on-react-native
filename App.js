@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View, SafeAreaView, ScrollView } from "react-native";
-import { colors } from "./src/constants";
+import { colors, CLEAR, ENTER } from "./src/constants";
 import Keyboard from "./src/components/Keyboard";
+import { v4 as uuidv4 } from "uuid";
 
 const NUMBER_OF_TRIES = 6; //Finish point on 03.01
 
@@ -21,11 +22,31 @@ export default function App() {
   const [curCol, setCurCol] = useState(0);
 
   const onKeyPressed = (key) => {
-    console.warn(key);
     const updatedRows = copyArray(rows);
-    updatedRows[curRow][curCol] = key;
-    setRows(updatedRows);
-    setCurCol(curCol + 1); //moves across the row
+
+    if (key === CLEAR) {
+      const prevCol = curCol - 1;
+      if (prevCol >= 0) {
+        updatedRows[curRow][prevCol] = "";
+        setRows(updatedRows);
+        setCurCol(prevCol);
+      }
+      return;
+    }
+
+    if (key === ENTER) {
+      if (curCol === rows[0].length) {
+        setCurRow(curRow + 1);
+        setCurCol(0);
+      }
+
+      return;
+    }
+    if (curCol < rows[0].length) {
+      updatedRows[curRow][curCol] = key;
+      setRows(updatedRows);
+      setCurCol(curCol + 1); //moves across the row
+    }
   };
 
   const isCellActive = (row, col) => {
@@ -39,13 +60,14 @@ export default function App() {
 
       <ScrollView style={styles.map}>
         {rows.map((row, i) => (
-          <View key={`row-${i}`} style={styles.row}>
+          <View key={uuidv4()} style={styles.row}>
             {row.map((cell, j) => (
               <View
+                key={uuidv4()}
                 style={[
                   styles.cell,
                   {
-                    borderColor: isCellActive(i, j) //shows the active cell
+                    borderColor: isCellActive(i, j) //shows the active cell outlined in gray box
                       ? colors.lightgrey
                       : colors.darkgrey,
                   },
