@@ -25,7 +25,11 @@ export default function App() {
     const updatedRows = copyArray(rows);
     updatedRows[curRow][curCol] = key;
     setRows(updatedRows);
-    setCurCol(curCol + 1); //finished here on 05.01
+    setCurCol(curCol + 1); //moves across the row
+  };
+
+  const isCellActive = (row, col) => {
+    return row === curRow && col === curCol;
   };
 
   return (
@@ -34,10 +38,19 @@ export default function App() {
       <Text style={styles.title}>WORDLE</Text>
 
       <ScrollView style={styles.map}>
-        {rows.map((row) => (
-          <View style={styles.row}>
-            {row.map((cell) => (
-              <View style={styles.cell}>
+        {rows.map((row, i) => (
+          <View key={`row-${i}`} style={styles.row}>
+            {row.map((cell, j) => (
+              <View
+                style={[
+                  styles.cell,
+                  {
+                    borderColor: isCellActive(i, j) //shows the active cell
+                      ? colors.lightgrey
+                      : colors.darkgrey,
+                  },
+                ]}
+              >
                 <Text style={styles.cellText}>{cell.toUpperCase()}</Text>
               </View>
             ))}
