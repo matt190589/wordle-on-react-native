@@ -12,7 +12,7 @@ const copyArray = (arr) => {
 };
 
 export default function App() {
-  const word = "fiona";
+  const word = "hello";
   const letters = word.split("");
 
   const [rows, setRows] = useState(
@@ -53,7 +53,8 @@ export default function App() {
     return row === curRow && col === curCol;
   };
 
-  const getCellBGColor = (letter, row, col) => {
+  const getCellBGColor = (row, col) => {
+    const letter = rows[row][col];
     if (row >= curRow) {
       return colors.black;
     }
@@ -66,6 +67,16 @@ export default function App() {
     }
     return colors.darkgrey;
   };
+
+  const getAllLettersWithColor = (color) => {
+    return rows.flatMap((row, i) =>
+      row.filter((cell, j) => getCellBGColor(i, j) === color)
+    );
+  };
+
+  const greenCaps = getAllLettersWithColor(colors.primary);
+  const yellowCaps = getAllLettersWithColor(colors.secondary);
+  const greyCaps = getAllLettersWithColor(colors.darkgrey);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -84,7 +95,7 @@ export default function App() {
                     borderColor: isCellActive(i, j) //shows the active cell outlined in gray box
                       ? colors.lightgrey
                       : colors.darkgrey,
-                    backgroundColor: getCellBGColor(letter, i, j),
+                    backgroundColor: getCellBGColor(i, j),
                   },
                 ]}
               >
@@ -94,7 +105,12 @@ export default function App() {
           </View>
         ))}
       </ScrollView>
-      <Keyboard onKeyPressed={onKeyPressed} />
+      <Keyboard
+        onKeyPressed={onKeyPressed}
+        greenCaps={greenCaps}
+        yellowCaps={yellowCaps}
+        greyCaps={greyCaps} // Finished here on 30.01
+      />
     </SafeAreaView>
   );
 }
@@ -110,6 +126,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "bold",
     letterSpacing: 7,
+    paddingTop: 20,
   },
   map: {
     alignSelf: "stretch",
