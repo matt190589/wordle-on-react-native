@@ -1,11 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View, SafeAreaView, ScrollView } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  SafeAreaView,
+  ScrollView,
+  Alert,
+} from "react-native";
 import { colors, CLEAR, ENTER } from "./src/constants";
 import Keyboard from "./src/components/Keyboard";
 import { v4 as uuidv4 } from "uuid";
 
-const NUMBER_OF_TRIES = 6; //Finish point on 03.01
+const NUMBER_OF_TRIES = 6;
 
 const copyArray = (arr) => {
   return [...arr.map((rows) => [...rows])];
@@ -20,8 +27,37 @@ export default function App() {
   );
   const [curRow, setCurRow] = useState(0);
   const [curCol, setCurCol] = useState(0);
+  const [gameState, setGameState] = useState("playing"); //won, lost, playing
+
+  useEffect(() => {
+    if (curRow > 0) {
+      checkGameState();
+    }
+  }, [curRow]);
+
+  const checkGameState = () => {
+    if (checkIfWon()) {
+      Alert.alert(`Hurray, you won!`);
+      setGameState("won");
+    } else if (checkIfLost()) {
+      Alert.alert(`Unlucky, try again tomorrow`);
+      setGameState("lost");
+    }
+  };
+
+  const checkIfWon = () => {
+    const row = rows[curRow - 1];
+    return row.every((letter, i) => letter === letters[i]);
+  };
+
+  const checkIfLost = () => {
+    return curRow === rows.length;
+  };
 
   const onKeyPressed = (key) => {
+    if (gameState !== "playing") {
+      return;
+    }
     const updatedRows = copyArray(rows);
 
     if (key === CLEAR) {
@@ -109,7 +145,7 @@ export default function App() {
         onKeyPressed={onKeyPressed}
         greenCaps={greenCaps}
         yellowCaps={yellowCaps}
-        greyCaps={greyCaps} // Finished here on 30.01
+        greyCaps={greyCaps}
       />
     </SafeAreaView>
   );
@@ -130,7 +166,6 @@ const styles = StyleSheet.create({
   },
   map: {
     alignSelf: "stretch",
-    height: 100,
     marginVertical: 20,
   },
   row: {
