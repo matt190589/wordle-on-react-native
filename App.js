@@ -37,10 +37,10 @@ export default function App() {
   }, [curRow]);
 
   const checkGameState = () => {
-    if (checkIfWon()) {
-      Alert.alert(`Hurray, you won!`, [{ text: "Share", onPress: shareScore }]);
+    if (checkIfWon() && gameState !== "won") {
+      Alert.alert(`Hurray, you won!`);
       setGameState("won");
-    } else if (checkIfLost()) {
+    } else if (checkIfLost() && gameState !== "lost") {
       Alert.alert(`Unlucky, try again tomorrow`);
       setGameState("lost");
     }
@@ -55,7 +55,7 @@ export default function App() {
       .join("\n");
     const textToShare = `Wordle \n${textMap}`;
     Clipboard.setStringAsync(textToShare);
-    Alert.alert("Copied successfully", "Share your score with friends.");
+    Alert.alert(`Copied successfully, Share your score with friends.`);
   };
 
   const checkIfWon = () => {
@@ -64,7 +64,7 @@ export default function App() {
   };
 
   const checkIfLost = () => {
-    return curRow === rows.length;
+    return !checkIfWon() && curRow === rows.length;
   };
 
   const onKeyPressed = (key) => {
