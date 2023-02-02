@@ -1,26 +1,16 @@
 import { useEffect, useState } from "react";
-import { Text, View, ScrollView, Alert } from "react-native";
+import { Text, View, ScrollView, Alert, ActivityIndicator } from "react-native";
 import { colors, CLEAR, ENTER, colorsToEmoji } from "../../constants";
 import Keyboard from "../Keyboard/Keyboard";
 import { v4 as uuidv4 } from "uuid";
 import * as Clipboard from "expo-clipboard";
 import words from "../../../lib/data";
 import styles from "./Game.styles";
+import { copyArray, getDayOfTheYear } from "../Utils";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const NUMBER_OF_TRIES = 6;
 
-const copyArray = (arr) => {
-  return [...arr.map((rows) => [...rows])];
-};
-const getDayOfTheYear = () => {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 0);
-  const diff = now - start;
-  const oneDay = 1000 * 60 * 60 * 24;
-  const day = Math.floor(diff / oneDay) * 3;
-  console.log("Day of year: " + day);
-  return day;
-};
 const dayOfTheYear = getDayOfTheYear();
 
 export default function Game() {
@@ -32,13 +22,52 @@ export default function Game() {
   );
   const [curRow, setCurRow] = useState(0);
   const [curCol, setCurCol] = useState(0);
-  const [gameState, setGameState] = useState("playing"); //won, lost, playing
+  const [gameState, setGameState] = useState("playing"); //W, L, playing
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     if (curRow > 0) {
       checkGameState();
     }
   }, [curRow]);
+
+  useEffect(() => {
+    if (loaded) {
+      persistState();
+    }
+  }, [rows, curRow, curCol, gameState]);
+
+  useEffect(() => {
+    readState();
+  }, []);
+
+  const persistState = async () => {
+    // write all the state variables in async storage
+    const data = {
+      rows,
+      curRow,
+      curCol,
+      gameState,
+    };
+    // asyncstorage cannot store objects, only strings
+    const dataString = JSON.stringify(data); // later JSON.parse(string)
+    await AsyncStorage.setItem("@game", dataString);
+  };
+
+  const readState = async () => {
+    const dataString = await AsyncStorage.getItem("@game");
+    console.log(dataString);
+    try {
+      const data = JSON.parse(dataString);
+      setRows(data.rows);
+      setCurCol(data.curCol);
+      setCurRow(data.curRow);
+      setGameState(data.gameState);
+    } catch (e) {
+      console.log("Couldn't parse the state");
+    }
+    setLoaded(true);
+  };
 
   const checkGameState = () => {
     if (checkIfWon() && gameState !== "won") {
@@ -131,6 +160,9 @@ export default function Game() {
   const yellowCaps = getAllLettersWithColor(colors.secondary);
   const greyCaps = getAllLettersWithColor(colors.darkgrey);
 
+  if (!loaded) {
+    return <ActivityIndicator />;
+  }
   return (
     <>
       <ScrollView style={styles.map}>
