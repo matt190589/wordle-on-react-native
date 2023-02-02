@@ -12,15 +12,26 @@ import { colors, CLEAR, ENTER, colorsToEmoji } from "./src/constants";
 import Keyboard from "./src/components/Keyboard";
 import { v4 as uuidv4 } from "uuid";
 import * as Clipboard from "expo-clipboard";
+import words from "./lib/data";
 
 const NUMBER_OF_TRIES = 6;
 
 const copyArray = (arr) => {
   return [...arr.map((rows) => [...rows])];
 };
+const getDayOfTheYear = () => {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const diff = now - start;
+  const oneDay = 1000 * 60 * 60 * 24;
+  const day = Math.floor(diff / oneDay) * 3;
+  console.log("Day of year: " + day);
+  return day;
+};
+const dayOfTheYear = getDayOfTheYear();
 
 export default function App() {
-  const word = "hello";
+  const word = words[dayOfTheYear];
   const letters = word.split("");
 
   const [rows, setRows] = useState(
