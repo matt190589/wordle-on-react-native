@@ -6,14 +6,25 @@ import { v4 as uuidv4 } from "uuid";
 import * as Clipboard from "expo-clipboard";
 import words from "../../../lib/data";
 import styles from "./Game.styles";
-import { copyArray, getDayOfTheYear } from "../Utils";
+import { copyArray, getDayKey, getDayOfTheYear } from "../Utils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const NUMBER_OF_TRIES = 6;
 
 const dayOfTheYear = getDayOfTheYear();
+const dayKey = getDayKey();
+
+// const game = {
+//   day_15: {
+//     rows: [[], []],
+//     curRow: 4,
+//     curCol: 2,
+//     gameState: "won"
+//   }
+// }
 
 export default function Game() {
+  // AsyncStorage.removeItem("@game");
   const word = words[dayOfTheYear];
   const letters = word.split("");
 
@@ -43,15 +54,32 @@ export default function Game() {
 
   const persistState = async () => {
     // write all the state variables in async storage
-    const data = {
+
+    const dataForToday = {
       rows,
       curRow,
       curCol,
       gameState,
     };
-    // asyncstorage cannot store objects, only strings
-    const dataString = JSON.stringify(data); // later JSON.parse(string)
-    await AsyncStorage.setItem("@game", dataString);
+
+    // 1. read the data
+    // 2. Update the existingstate
+    // 3. write it back into the string
+
+    try {
+      const existingStateString = await AsyncStorage.getItem("@game");
+      const existingState = existingStateString
+        ? JSON.parse(existingStateString)
+        : {};
+
+      existingState[dayKey] = dataForToday;
+
+      // asyncstorage cannot store objects, only strings
+      const dataString = JSON.stringify(existingState); // later JSON.parse(string)
+      await AsyncStorage.setItem("@game", dataString);
+    } catch (e) {
+      console.log("Failed to write data to async storage", e);
+    }
   };
 
   const readState = async () => {
@@ -59,6 +87,7 @@ export default function Game() {
     console.log(dataString);
     try {
       const data = JSON.parse(dataString);
+      const day = data[dayKey];
       setRows(data.rows);
       setCurCol(data.curCol);
       setCurRow(data.curRow);
